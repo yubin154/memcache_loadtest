@@ -38,7 +38,12 @@ public final class GetServlet extends HttpServlet {
       key = MemcacheValues.randomKey();
       value = MemcacheValues.random(valueSizeRange);
       try {
-        memcache.put(key, value);
+        if (reader.isMemcacheg()) {
+          // reader is G, writer is D
+          client.add(key, 0, value).get();
+        } else {
+          memcache.put(key, value);
+        }
       } catch (Exception e) {
         logger.severe("Memcache set failed for key: " + key);
         writer.fail();
