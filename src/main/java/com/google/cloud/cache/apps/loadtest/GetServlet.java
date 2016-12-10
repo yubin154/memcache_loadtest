@@ -30,7 +30,8 @@ public final class GetServlet extends HttpServlet {
 
     String key = reader.readKey();
     Object value = null;
-    Object value1 = null;
+    Object valueg = null;
+    Object valued = null;
     MemcacheService memcache = MemcacheServiceFactory.getMemcacheService();
     MemcachedClient client = SpymemcachedUtil.binaryClient();
     Range<Integer> valueSizeRange = reader.readValueSizeRange();
@@ -41,22 +42,24 @@ public final class GetServlet extends HttpServlet {
 
     value = MemcacheValues.random(valueSizeRange);
     try {
-      if (reader.isMemcacheg()) {
-        // reader is G, writer is D
+      if (!reader.isMemcacheg()) {
         client.add(key, 0, value).get();
-        value1 = memcache.get(key);
       } else {
         memcache.put(key, value);
-        value = client.get(key);
       }
+      valueg = memcache.get(key);
+      valued = client.get(key);
     } catch (Exception e) {
       logger.severe("Memcache set failed for key: " + key);
       writer.fail();
       return;
     }
-    writer.write(String.format("%s\n%s\n%s",
-        key,
-        (value == null ? "NULL" : value.toString()),
-        (value1 == null ? "NULL" : value1.toString())));
+    writer.write(
+        String.format(
+            "key=%s\nvalue=%s\nvalueg=%s\nvalued=%s",
+            key,
+            (value == null ? "NULL" : value.toString()),
+            (valueg == null ? "NULL" : valueg.toString()),
+            (valued == null ? "NULL" : valued.toString())));
   }
 }
