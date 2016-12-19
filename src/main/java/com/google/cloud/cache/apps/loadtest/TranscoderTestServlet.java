@@ -21,8 +21,7 @@ public final class TranscoderTestServlet extends HttpServlet {
     TranscoderTest tester = new TranscoderTest("169.254.10.1", 11211, "1.4.22");
     try {
       tester.setUp();
-      tester.testStr();
-      tester.testBytes();
+      tester.testAll();
       tester.tearDown();
     } catch (Exception e) {
       try {
