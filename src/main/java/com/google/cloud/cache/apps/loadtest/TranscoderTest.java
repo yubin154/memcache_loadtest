@@ -6,6 +6,10 @@ import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService.SetPolicy;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** */
 public final class TranscoderTest extends SpyMemcachedBaseTest {
@@ -24,7 +28,11 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     testShort();
     testByte();
     testSerializableObject();
+    testNull();
     testBytes();
+    testIncrDecr();
+    testDelete();
+    testMultiKeySetGet();
   }
 
   public void testStr() throws Exception {
@@ -79,6 +87,10 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     checkValuesInBothClients("map", mapObj);
   }
 
+  public void testNull() throws Exception {
+    checkValuesInBothClients("null", null);
+  }
+
   public void testBytes() throws Exception {
     checkValuesInBothClients("zero byte", new byte[0]);
     byte[] data = new byte[] {1, 2, 3, 4, 5, 6};
@@ -88,9 +100,49 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     //checkValuesInBothClients("bigKeyBytes", Strings.repeat("x", 300).getBytes());
   }
 
+  public void testIncrDecr() throws Exception {
+    result.append("Testing incr decr");
+    String key1 = randomKey();
+    result.append(String.format("d2g key=%s\n", key1));
+    expectTrue(
+        client.incr(makeKey(key1), 1, 10, DEFAULT_EXP) == 10, "increment with default value");
+    expectTrue(client.incr(makeKey(key1), 1) == 11, "increment d");
+    expectTrue(client.decr(makeKey(key1), 1) == 10, "decrement d");
+    expectTrue(aeClient.increment(key1, 1) == 11, "increment g");
+    expectTrue(aeClient.increment(key1, -1) == 10, "decrement g");
+  }
+
+  public void testDelete() throws Exception {
+    result.append("Testing delete");
+    String key1 = randomKey();
+    result.append(String.format("d2g key=%s\n", key1));
+    // add by memcached, delete from memcacheg
+    expectTrue(client.add(makeKey(key1), DEFAULT_EXP, "").get(), "PUT");
+    expectTrue(aeClient.delete(key1), "DELETE verified");
+
+    String key2 = randomKey();
+    result.append(String.format("g2d key=%s\n", key2));
+    // add by memcacheg, delete from memcached
+    aeClient.put(key2, "");
+    expectTrue(client.delete(makeKey(key2)).get(), "DELETE verified");
+  }
+
+  public void testMultiKeySetGet() throws Exception {
+    result.append("Testing multi-ket SETGET");
+    Map<String, Object> map = new HashMap<>();
+    List<String> keys = new ArrayList<>();
+    for (int i = 10; i < 10; i++) {
+      String key = randomKey();
+      keys.add(makeKey(key));
+      map.put(key, Integer.toString(i));
+    }
+    // add by memcacheg, retrieved from memcached
+    aeClient.putAll(map);
+    result.append(client.getBulk(keys).toString());
+  }
+
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
-    result.append(
-        String.format("Testing %s, %s=%s\n", testDesc, obj.getClass().getName(), obj.toString()));
+    result.append(String.format("Testing %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
     String key1 = randomKey();
     result.append(String.format("d2g key=%s\n", key1));
     // add by memcached, retrieved from memcacheg
