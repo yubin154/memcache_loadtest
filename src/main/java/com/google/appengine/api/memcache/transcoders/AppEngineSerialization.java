@@ -221,7 +221,7 @@ public class AppEngineSerialization {
   }
 
   /**
-   * Converts the user's key Object into a byte[] for the MemcacheGetRequest.
+   * Converts the user's key Object into a UTF8 string representation for the MemcacheRequest.
    * Because the underlying service has a length limit, we actually use the
    * SHA1 hash of the serialized object as its key if it's not a basic type.
    * For the basic types (that is, {@code String}, {@code Boolean}, and the
@@ -231,7 +231,11 @@ public class AppEngineSerialization {
    * @return hash result.  For the key {@code null}, the hash is also
    *   {@code null}.
    */
-  public static byte[] makePbKey(Object key) throws IOException {
+  public static String makeKey(Object key) throws IOException {
+    return new String(makePbKey(key), "UTF-8");
+  }
+
+  private static byte[] makePbKey(Object key) throws IOException {
     // Changes to this function must be replicated for getFormattedKey found in
     // google3/apphosting/client/admin_console/memcache_viewer/
     // memcache_utils.py

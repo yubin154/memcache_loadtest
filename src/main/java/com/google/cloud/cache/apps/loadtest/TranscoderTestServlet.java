@@ -15,16 +15,17 @@ public final class TranscoderTestServlet extends HttpServlet {
       throws IOException {
     RequestReader reader = RequestReader.create(request);
     final ResponseWriter writer = ResponseWriter.create(response);
+    writer.write("Setup transcoder test\n");
+    TranscoderTest tester = new TranscoderTest("169.254.10.1", 11211, "1.4.22");
     try {
-      TranscoderTest tester =
-          new TranscoderTest("169.254.10.1", 11211, "1.4.22");
-      writer.write("Setup transcoder test\n");
       tester.setUp();
       tester.testStr();
-      writer.write(tester.getResult());
+      tester.testBytes();
       tester.tearDown();
     } catch (Exception e) {
       throw new IOException(e);
+    } finally {
+      writer.write(tester.getResult());
     }
     writer.write("done\n");
     writer.flush();
