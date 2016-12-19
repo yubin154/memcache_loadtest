@@ -58,6 +58,14 @@ abstract class SpyMemcachedBaseTest {
     expectTrue(!condition, template, values);
   }
 
+  protected void expectEqual(Object expected, Object actual, String template, Object... values) {
+    boolean condition = expected.equals(actual);
+    if (!condition) {
+      result.append(String.format(" actual=%s ", actual));
+    }
+    expectTrue(condition, template, values);
+  }
+
   public boolean isTestPassed() {
     return testPassed;
   }

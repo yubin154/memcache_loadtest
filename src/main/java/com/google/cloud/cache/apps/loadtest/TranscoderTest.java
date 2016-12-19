@@ -42,14 +42,14 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     String key1 = randomKey();
     result.append(String.format("key=%s, keyg=%s", key1, makeKey(key1)));
     // add by memcached, retrieved from memcacheg
-    expectTrue(client.add(makeKey(makeKey(key1)), DEFAULT_EXP, obj).get(), "add d2g");
-    expectTrue(obj.equals(aeClient.get(key1)), "value verified");
+    expectTrue(client.add(makeKey(key1), DEFAULT_EXP, obj).get(), "add d2g");
+    expectEqual(obj, aeClient.get(key1), "value verified");
 
     String key2 = randomKey();
     result.append(String.format("key=%s, keyg=%s", key2, makeKey(key2)));
     // add by memcacheg, retrieved from memcached
     aeClient.put(key2, obj);
-    expectTrue(obj.equals(aeClient.get(key2)), "add g2d");
-    expectTrue(obj.equals(client.get(makeKey(key2))), "value verified");
+    expectEqual(obj, aeClient.get(key2), "add g2d");
+    expectEqual(obj, client.get(makeKey(key2)), "value verified");
   }
 }
