@@ -28,11 +28,11 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     testShort();
     testByte();
     testSerializableObject();
-    testNull();
     testBytes();
     testIncrDecr();
     testDelete();
     testMultiKeySetGet();
+    testNull();
   }
 
   public void testStr() throws Exception {
@@ -142,7 +142,11 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
-    result.append(String.format("Testing %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
+    if (obj != null) {
+      result.append(String.format("Testing %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
+    } else {
+      result.append(String.format("Testing %s, value=null\n", testDesc));
+    }
     String key1 = randomKey();
     result.append(String.format("d2g key=%s\n", key1));
     // add by memcached, retrieved from memcacheg
