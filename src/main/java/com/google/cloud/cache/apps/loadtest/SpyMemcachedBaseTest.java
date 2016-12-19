@@ -61,7 +61,10 @@ abstract class SpyMemcachedBaseTest {
   }
 
   protected void expectEqual(Object expected, Object actual, String template, Object... values) {
-    boolean condition = (expected != null ? expected.equals(actual) : (expected == actual));
+    boolean condition =
+        ((expected == null || expected instanceof byte[])
+            ? (expected == actual)
+            : expected.equals(actual));
     if (!condition) {
       result.append(String.format(" actual=%s ", actual));
     }
