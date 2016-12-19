@@ -3,6 +3,7 @@ package com.google.cloud.cache.apps.loadtest;
 import com.google.appengine.api.memcache.transcoders.AppEngineSerializingTranscoder;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -61,10 +62,14 @@ abstract class SpyMemcachedBaseTest {
   }
 
   protected void expectEqual(Object expected, Object actual, String template, Object... values) {
-    boolean condition =
-        ((expected == null || expected instanceof byte[])
-            ? (expected == actual)
-            : expected.equals(actual));
+    boolean condition = false;
+    if (expected == null) {
+      condition = (expected == actual);
+    } else if (expected instanceof byte[]) {
+      condition = Arrays.equals((byte[]) expected, (byte[]) actual);
+    } else {
+      condition = expected.equals(actual);
+    }
     if (!condition) {
       result.append(String.format(" actual=%s ", actual));
     }

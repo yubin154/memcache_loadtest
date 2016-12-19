@@ -143,7 +143,8 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
 
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
     if (obj != null) {
-      result.append(String.format("\nTesting %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
+      result.append(
+          String.format("\nTesting %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
     } else {
       result.append(String.format("\nTesting %s, value=null\n", testDesc));
     }
