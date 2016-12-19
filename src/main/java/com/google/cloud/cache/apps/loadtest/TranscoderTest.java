@@ -36,17 +36,20 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testStr() throws Exception {
+    result.append("testString\n");
     checkValuesInBothClients("string", "some string");
     checkValuesInBothClients("empty string", "");
     checkValuesInBothClients("max string", "long string at max length(TBD)");
   }
 
   public void testBoolean() throws Exception {
+    result.append("testBoolean\n");
     checkValuesInBothClients("false", Boolean.FALSE);
     checkValuesInBothClients("true", Boolean.TRUE);
   }
 
   public void testInteger() throws Exception {
+    result.append("testInteger\n");
     checkValuesInBothClients("integer zero", new Integer(0));
     checkValuesInBothClients("integer max", Integer.MAX_VALUE);
     checkValuesInBothClients("integer min", Integer.MIN_VALUE);
@@ -55,6 +58,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testLong() throws Exception {
+    result.append("testLong\n");
     checkValuesInBothClients("long zero", new Long(0));
     checkValuesInBothClients("long max", Long.MAX_VALUE);
     checkValuesInBothClients("long min", Long.MIN_VALUE);
@@ -63,6 +67,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testShort() throws Exception {
+    result.append("testShort\n");
     checkValuesInBothClients("short zero", new Short("0"));
     checkValuesInBothClients("short max", Short.MAX_VALUE);
     checkValuesInBothClients("short min", Short.MIN_VALUE);
@@ -71,6 +76,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testByte() throws Exception {
+    result.append("testByte\n");
     checkValuesInBothClients("byte zero", (byte) 0);
     checkValuesInBothClients("byte max", Byte.MAX_VALUE);
     checkValuesInBothClients("byte min", Byte.MIN_VALUE);
@@ -79,6 +85,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testSerializableObject() throws Exception {
+    result.append("testObj\n");
     java.util.Date dateObj = new java.util.Date();
     checkValuesInBothClients("date", dateObj);
     java.util.ArrayList listObj = new java.util.ArrayList();
@@ -88,10 +95,12 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testNull() throws Exception {
+    result.append("testNull\n");
     checkValuesInBothClients("null", null);
   }
 
   public void testBytes() throws Exception {
+    result.append("testBytes\n");
     checkValuesInBothClients("zero byte", new byte[0]);
     byte[] data = new byte[] {1, 2, 3, 4, 5, 6};
     checkValuesInBothClients("bytes", data);
@@ -101,7 +110,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testIncrDecr() throws Exception {
-    result.append("Testing incr decr");
+    result.append("Testing incr decr\n");
     String key1 = randomKey();
     result.append(String.format("d2g key=%s\n", key1));
     expectTrue(
@@ -113,7 +122,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testDelete() throws Exception {
-    result.append("Testing delete");
+    result.append("Testing delete\n");
     String key1 = randomKey();
     result.append(String.format("d2g key=%s\n", key1));
     // add by memcached, delete from memcacheg
@@ -128,7 +137,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
   }
 
   public void testMultiKeySetGet() throws Exception {
-    result.append("Testing multi-ket SETGET");
+    result.append("Testing multi-ket SETGET\n");
     Map<String, Object> map = new HashMap<>();
     List<String> keys = new ArrayList<>();
     for (int i = 10; i < 10; i++) {
@@ -143,9 +152,9 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
 
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
     if (obj != null) {
-      result.append(String.format("Testing %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
+      result.append(String.format("\nTesting %s, %s=%s\n", testDesc, obj.getClass().getName(), obj));
     } else {
-      result.append(String.format("Testing %s, value=null\n", testDesc));
+      result.append(String.format("\nTesting %s, value=null\n", testDesc));
     }
     String key1 = randomKey();
     result.append(String.format("d2g key=%s\n", key1));
