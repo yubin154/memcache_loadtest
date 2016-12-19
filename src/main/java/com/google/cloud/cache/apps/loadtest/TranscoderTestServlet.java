@@ -1,6 +1,8 @@
 package com.google.cloud.cache.apps.loadtest;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -23,7 +25,14 @@ public final class TranscoderTestServlet extends HttpServlet {
       tester.testBytes();
       tester.tearDown();
     } catch (Exception e) {
-      throw new IOException(e);
+      try {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        writer.write(sw.toString());
+      } catch (Exception ex) {
+        ex.printStackTrace();
+      }
     } finally {
       writer.write(tester.getResult());
     }
