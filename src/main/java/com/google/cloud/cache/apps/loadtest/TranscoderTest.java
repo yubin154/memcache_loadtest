@@ -152,7 +152,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     aeClient.put(key1, "value");
     // cas from g
     IdentifiableValue casValue = aeClient.getIdentifiable(key1);
-    client.add(makeKey(key1), DEFAULT_EXP, "value").get();
+    client.set(makeKey(key1), DEFAULT_EXP, "value").get();
     expectFalse(aeClient.putIfUntouched(key1, casValue, "valueg"), "CAS4g verified");
     // cas from d
     CASValue<Object> cas = client.gets(makeKey(key1));
