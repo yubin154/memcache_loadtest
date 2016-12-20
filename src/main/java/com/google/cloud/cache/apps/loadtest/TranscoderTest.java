@@ -4,11 +4,14 @@ import static com.google.appengine.api.memcache.transcoders.Serialization.makeKe
 import static com.google.appengine.api.memcache.transcoders.Serialization.makeKeys;
 
 import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheService.IdentifiableValue;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASValue;
 
 /** */
 public final class TranscoderTest extends SpyMemcachedBaseTest {
@@ -130,7 +133,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     result.append("\nTesting multi-ket SETGET\n");
     Map<String, Object> map = new HashMap<>();
     List<String> keys = new ArrayList<>();
-    for (int i = 10; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
       String key = randomKey();
       keys.add(key);
       map.put(key, Integer.toString(i));
@@ -142,6 +145,22 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     result.append(values.toString()).append("\n");
     expectTrue(aeClient.getAll(keys).size() == 10, "GETALL verified");
     expectTrue(values.size() == 10, "GETBULK verified");
+  }
+
+  public void testCas() throws Exception {
+    result.append("\nTesting cas\n");
+    String key1 = randomKey();
+    aeClient.put(key1, "value");
+    // cas from g
+    IdentifiableValue casValue = aeClient.getIdentifiable(key1);
+    client.add(makeKey(key1), DEFAULT_EXP, "value").get();
+    expectFalse(aeClient.putIfUntouched(key1, casValue, "valueg"), "CAS4g verified");
+    // cas from d
+    CASValue<Object> cas = client.gets(makeKey(key1));
+    aeClient.put(key1, "value");
+    expectTrue(
+        client.cas(makeKey(key1), cas.getCas(), "valued").equals(CASResponse.EXISTS),
+        "CAS4d verified");
   }
 
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
