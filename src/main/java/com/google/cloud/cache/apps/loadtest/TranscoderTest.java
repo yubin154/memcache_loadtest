@@ -34,6 +34,7 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     testIncrDecr();
     testDelete();
     testMultiKeySetGet();
+    testCas();
     testNull();
   }
 
@@ -141,8 +142,6 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     // add by memcacheg, retrieved from memcached
     aeClient.putAll(map);
     Map<String, Object> values = client.getBulk(makeKeys(keys));
-    result.append(map.toString()).append("\n");
-    result.append(values.toString()).append("\n");
     expectTrue(aeClient.getAll(keys).size() == 10, "GETALL verified");
     expectTrue(values.size() == 10, "GETBULK verified");
   }
