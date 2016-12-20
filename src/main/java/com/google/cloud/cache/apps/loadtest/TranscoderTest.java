@@ -3,8 +3,6 @@ package com.google.cloud.cache.apps.loadtest;
 import static com.google.appengine.api.memcache.transcoders.Serialization.makeKey;
 import static com.google.appengine.api.memcache.transcoders.Serialization.makeKeys;
 
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService.SetPolicy;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import java.util.ArrayList;
@@ -139,7 +137,9 @@ public final class TranscoderTest extends SpyMemcachedBaseTest {
     }
     // add by memcacheg, retrieved from memcached
     aeClient.putAll(map);
-    expectTrue(client.getBulk(makeKeys(keys)).size() == 10, "GETBULK verified");
+    Map<String, Object> values = client.getBulk(makeKeys(keys));
+    result.append(values.toString()).append("\n");
+    expectTrue(values.size() == 10, "GETBULK verified");
   }
 
   private void checkValuesInBothClients(String testDesc, Object obj) throws Exception {
