@@ -11,23 +11,16 @@ import org.LatencyUtils.LatencyStats;
  */
 public final class LatencyTracker {
 
-  private static final LatencyTracker me = new LatencyTracker();
-
   private LatencyStats myOpStats = new LatencyStats();
 
   private LatencyTracker() {}
-
-  public static LatencyTracker getInstance() {
-    return me;
-  }
 
   public static LatencyTracker newInstance() {
     return new LatencyTracker();
   }
 
   void recordLatency(long nanoTime) {
-    // We convert and record micro-second.
-    myOpStats.recordLatency(nanoTime/1000);
+    myOpStats.recordLatency(nanoTime);
   }
 
   String report() throws IOException {
@@ -35,8 +28,8 @@ public final class LatencyTracker {
     Histogram intervalHistogram = myOpStats.getIntervalHistogram();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(os);
-    // 10 buckets
-    intervalHistogram.outputPercentileDistribution(ps, 10.0);
+    // Report micro-second, 2 ticks per half percentile.
+    intervalHistogram.outputPercentileDistribution(ps, 2, 1000.0);
     return new String(os.toByteArray(), "UTF-8");
   }
 
