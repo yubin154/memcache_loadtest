@@ -26,7 +26,8 @@ public final class LatencyTracker {
   }
 
   void recordLatency(long nanoTime) {
-    myOpStats.recordLatency(nanoTime);
+    // We convert and record micro-second.
+    myOpStats.recordLatency(nanoTime/1000.0);
   }
 
   String report() throws IOException {
@@ -34,7 +35,8 @@ public final class LatencyTracker {
     Histogram intervalHistogram = myOpStats.getIntervalHistogram();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(os);
-    intervalHistogram.outputPercentileDistribution(ps, 1000.0);
+    // 10 buckets
+    intervalHistogram.outputPercentileDistribution(ps, 10.0);
     return new String(os.toByteArray(), "UTF-8");
   }
 
