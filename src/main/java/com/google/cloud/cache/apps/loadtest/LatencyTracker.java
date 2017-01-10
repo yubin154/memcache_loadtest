@@ -27,7 +27,7 @@ public final class LatencyTracker {
 
   void recordLatency(long nanoTime) {
     // We convert and record micro-second.
-    myOpStats.recordLatency(nanoTime/1000.0);
+    myOpStats.recordLatency(nanoTime/1000);
   }
 
   String report() throws IOException {
