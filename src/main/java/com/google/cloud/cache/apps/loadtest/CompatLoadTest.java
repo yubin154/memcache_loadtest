@@ -32,7 +32,7 @@ final class CompatLoadTest extends BaseTest {
       client.put(key, value);
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker.getInstance()
+          ExecutionTracker
               .getExecutorService()
               .submit(
                   new Runnable() {
@@ -68,7 +68,7 @@ final class CompatLoadTest extends BaseTest {
       syncClient.put(key, value);
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker.getInstance()
+          ExecutionTracker
               .getExecutorService()
               .submit(
                   new Runnable() {

@@ -1,5 +1,8 @@
 package com.google.cloud.cache.apps.loadtest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,16 +12,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ExecutionTracker {
 
-  private static final ExecutionTracker me = new ExecutionTracker();
+  private static final ExecutorService executor = Executors.newCachedThreadPool();
 
-  private final ExecutorService executor = Executors.newCachedThreadPool();
   private AtomicInteger qpsCounter = new AtomicInteger(0);
   private AtomicInteger errorCounter = new AtomicInteger(0);
+  private List<Integer> qpsMeasures = new ArrayList<>();
+  private List<Integer> errorMeasures = new ArrayList<>();
 
   private ExecutionTracker() {}
 
   public int getAndResetQps() {
-    return qpsCounter.getAndSet(0);
+    int qpsMeasure = qpsCounter.getAndSet(0);
+    qpsMeasures.add(qpsMeasure);
+    return qpsMeasure;
   }
 
   public void incrementQps() {
@@ -26,23 +32,31 @@ public class ExecutionTracker {
   }
 
   public int getAndResetErrorCount() {
-    return errorCounter.getAndSet(0);
+    int errorMeasure = errorCounter.getAndSet(0);
+    errorMeasures.add(errorMeasure);
+    return errorMeasure;
   }
 
   public void incrementErrorCount() {
     errorCounter.incrementAndGet();
   }
 
-  public ExecutorService getExecutorService() {
-    return executor;
+  public double averageQps() {
+    OptionalDouble average = qpsMeasures.stream().mapToDouble(i -> i).average();
+    return average.isPresent() ? average.getAsDouble() : 0;
   }
 
-  public static final ExecutionTracker getInstance() {
-    return me;
+  public double averageErrors() {
+    OptionalDouble average = errorMeasures.stream().mapToDouble(i -> i).average();
+    return average.isPresent() ? average.getAsDouble() : 0;
   }
 
   public static final ExecutionTracker newInstance() {
     return new ExecutionTracker();
+  }
+
+  public static ExecutorService getExecutorService() {
+    return executor;
   }
 
 }

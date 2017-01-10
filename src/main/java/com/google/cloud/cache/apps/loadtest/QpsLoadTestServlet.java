@@ -29,13 +29,14 @@ public final class QpsLoadTestServlet extends HttpServlet {
     final int durationSec = reader.readDurationSec();
     int frontendQps = reader.readFrontendQps();
     List<Future> futures = new ArrayList<>();
+    final ExecutionTracker qpsTracker = ExecutionTracker.newInstance();
     for (int i = 0; i < frontendQps; ++i) {
       final String key = UUID.randomUUID().toString();
       final Object value = MemcacheValues.random(valueSizeRange);
       memcache.put(key, value);
-      ExecutionTracker.getInstance().incrementQps();
+      qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker.getInstance()
+          ExecutionTracker
               .getExecutorService()
               .submit(
                   new Runnable() {
@@ -49,11 +50,11 @@ public final class QpsLoadTestServlet extends HttpServlet {
                           long start = System.currentTimeMillis();
                           for (int i = 0; i < iterationCount; ++i) {
                             opsFutures.add(memcache.get(key));
-                            ExecutionTracker.getInstance().incrementQps();
+                            qpsTracker.incrementQps();
                           }
                           for (Future future : opsFutures) {
                             if (future.get() == null) {
-                              ExecutionTracker.getInstance().incrementErrorCount();
+                              qpsTracker.incrementErrorCount();
                             }
                           }
                           if (duration > 0) {
@@ -62,7 +63,7 @@ public final class QpsLoadTestServlet extends HttpServlet {
                           }
                         } while (duration-- >= 0);
                       } catch (Throwable t) {
-                        ExecutionTracker.getInstance().incrementErrorCount();
+                        qpsTracker.incrementErrorCount();
                       }
                     }
                   }));
@@ -73,9 +74,9 @@ public final class QpsLoadTestServlet extends HttpServlet {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-      writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
+      writer.write(String.format("QPS %s\n", qpsTracker.getAndResetQps()));
       writer.write(
-          String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+          String.format("Errors %s\n", qpsTracker.getAndResetErrorCount()));
       writer.flush();
     }
     for (Future future : futures) {

@@ -29,14 +29,15 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
     final int durationSec = reader.readDurationSec();
     int frontendQps = reader.readFrontendQps();
     List<Future> futures = new ArrayList<>();
+    final ExecutionTracker qpsTracker = ExecutionTracker.newInstance();
     final LatencyTracker latencyTracker = LatencyTracker.newInstance();
     for (int i = 0; i < frontendQps; ++i) {
       final String key = UUID.randomUUID().toString();
       final Object value = MemcacheValues.random(valueSizeRange);
       memcache.put(key, value);
-      ExecutionTracker.getInstance().incrementQps();
+      qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker.getInstance()
+          ExecutionTracker
               .getExecutorService()
               .submit(
                   new Runnable() {
@@ -50,13 +51,13 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
                           Object obj = memcache.get(key);
                           latencyTracker.recordLatency(System.nanoTime() - start);
                           if (obj == null) {
-                            ExecutionTracker.getInstance().incrementErrorCount();
+                            qpsTracker.incrementErrorCount();
                           } else {
-                            ExecutionTracker.getInstance().incrementQps();
+                            qpsTracker.incrementQps();
                           }
                         } while ((System.currentTimeMillis() - startMs) < durationMs);
                       } catch (Throwable t) {
-                        ExecutionTracker.getInstance().incrementErrorCount();
+                        qpsTracker.incrementErrorCount();
                       }
                     }
                   }));
@@ -67,9 +68,9 @@ public final class QpsLoadTestSyncServlet extends HttpServlet {
       } catch (Exception e) {
         writer.write(e.getMessage());
       }
-      writer.write(String.format("QPS %s\n", ExecutionTracker.getInstance().getAndResetQps()));
+      writer.write(String.format("QPS %s\n", qpsTracker.getAndResetQps()));
       writer.write(
-          String.format("Errors %s\n", ExecutionTracker.getInstance().getAndResetErrorCount()));
+          String.format("Errors %s\n", qpsTracker.getAndResetErrorCount()));
       writer.flush();
     }
     for (Future future : futures) {

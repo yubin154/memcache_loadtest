@@ -31,7 +31,7 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
       client.set(key, 0, value).get();
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker.getInstance()
+          ExecutionTracker
               .getExecutorService()
               .submit(
                   new Runnable() {
