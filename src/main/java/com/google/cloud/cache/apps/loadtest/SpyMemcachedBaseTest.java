@@ -3,27 +3,19 @@ package com.google.cloud.cache.apps.loadtest;
 import com.google.appengine.api.memcache.transcoders.SpymemcachedSerializingTranscoder;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.MemcachedClient;
 
-abstract class SpyMemcachedBaseTest {
+abstract class SpyMemcachedBaseTest extends BaseTest {
 
   private static final String LEASE_KEY = "LEASE";
   private static final int LEASE_TIMEOUT_SEC = 200;
-  protected static final java.util.Random random = new java.util.Random();
   protected static final int DEFAULT_EXP = 0;
-
-  private boolean testPassed = true;
 
   protected InetSocketAddress serverAddress;
   protected String version;
   protected boolean isAscii;
-  protected StringBuffer result = new StringBuffer();
 
   protected MemcachedClient client;
 
@@ -48,36 +40,7 @@ abstract class SpyMemcachedBaseTest {
 
   protected void expectTrue(boolean condition, String template, Object... values) {
     result.append(isAscii ? "ascii " : "binary ");
-    result.append(String.format(template, values));
-    if (!condition) {
-      testPassed = false;
-      result.append(" [FAIL]").append("\n");
-    } else {
-      result.append(" [pass]").append("\n");
-    }
-  }
-
-  protected void expectFalse(boolean condition, String template, Object... values) {
-    expectTrue(!condition, template, values);
-  }
-
-  protected void expectEqual(Object expected, Object actual, String template, Object... values) {
-    boolean condition = false;
-    if (expected == null) {
-      condition = (expected == actual);
-    } else if (expected instanceof byte[]) {
-      condition = Arrays.equals((byte[]) expected, (byte[]) actual);
-    } else {
-      condition = expected.equals(actual);
-    }
-    if (!condition) {
-      result.append(String.format(" actual=%s ", actual));
-    }
-    expectTrue(condition, template, values);
-  }
-
-  public boolean isTestPassed() {
-    return testPassed;
+    super.expectTrue(condition, template, values);
   }
 
   protected String setRandom(Object value) throws Exception {
@@ -90,33 +53,6 @@ abstract class SpyMemcachedBaseTest {
     String value = randomValue();
     client.set(key, DEFAULT_EXP, value);
     return value;
-  }
-
-  protected static Collection<String> bulkKeys(int size) {
-    List<String> keys = new ArrayList<>();
-    int i = 0;
-    while (i++ < size) {
-      keys.add(randomKey());
-    }
-    return keys;
-  }
-
-  public static String randomKey() {
-    return UUID.randomUUID().toString();
-  }
-
-  protected static byte[] randomBytes() {
-    byte[] result = new byte[random.nextInt(4096)];
-    random.nextBytes(result);
-    return result;
-  }
-
-  protected static String randomValue() {
-    return UUID.randomUUID().toString();
-  }
-
-  protected static int randomInteger() {
-    return random.nextInt(Integer.MAX_VALUE);
   }
 
   protected boolean lease() {
@@ -148,7 +84,4 @@ abstract class SpyMemcachedBaseTest {
     }
   }
 
-  public String getResult() {
-    return result.toString();
-  }
 }

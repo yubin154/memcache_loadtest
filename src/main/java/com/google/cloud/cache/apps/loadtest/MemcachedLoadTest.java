@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 
 final class MemcachedLoadTest extends SpyMemcachedBaseTest {
 
-  private volatile boolean stop = false;
   private ExecutionTracker qpsTracker;
   private LatencyTracker latencyTracker;
 
@@ -21,14 +20,6 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
     super(server, port, version, false);
     this.qpsTracker = qpsTracker;
     this.latencyTracker = latencyTracker;
-  }
-
-  void stopTest() {
-    this.stop = true;
-  }
-
-  private boolean testStopped() {
-    return stop;
   }
 
   void startTest(final Range<Integer> valueSizeRange, final int numOfThreads) throws Exception {

@@ -61,6 +61,10 @@
     <servlet-class>com.google.cloud.cache.apps.loadtest.MemcachedLoadTestServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>compatLoadTest</servlet-name>
+    <servlet-class>com.google.cloud.cache.apps.loadtest.CompatLoadTestServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>transcoderTest</servlet-name>
     <servlet-class>com.google.cloud.cache.apps.loadtest.TranscoderTestServlet</servlet-class>
   </servlet>
@@ -108,6 +112,10 @@
   <servlet-mapping>
     <servlet-name>memcachedLoadTest</servlet-name>
     <url-pattern>/memcachedloadtest</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>compatLoadTest</servlet-name>
+    <url-pattern>/compatloadtest</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>transcoderTest</servlet-name>
