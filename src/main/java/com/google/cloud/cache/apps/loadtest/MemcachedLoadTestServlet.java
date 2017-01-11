@@ -49,6 +49,7 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
                 })
             .start();
       }
+      qpsTracker.getAndResetQps();
       for (int i = 0; i <= durationSec; i++) {
         Thread.sleep(1000);
         writer.write(String.format("QPS %s\n", qpsTracker.getAndResetQps()));

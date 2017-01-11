@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.ServletRequest;
 
 final class RequestReader {
-  private static final int DEFAULT_BATCH_SIZE = 10;
+  private static final int DEFAULT_BATCH_SIZE = 1;
   private static final int DEFAULT_KEY_SPACE_SIZE = 1000;
   private static final int DEFAULT_ITERATION_COUNT = 1;
   private static final int DEFAULT_VALUE_SIZE = 1024;
@@ -77,6 +77,10 @@ final class RequestReader {
     return readInt("client_size", DEFAULT_CLIENT_SIZE);
   }
 
+  int readBatchSize() {
+    return readInt("batch_size", DEFAULT_BATCH_SIZE);
+  }
+
   /** Generate a random key. * */
   private static String randomKey(int keySpaceSize) {
     return "Key_" + ThreadLocalRandom.current().nextInt(keySpaceSize);
@@ -84,10 +88,6 @@ final class RequestReader {
 
   private int readKeySpaceSize() {
     return readInt("key_space_size", DEFAULT_KEY_SPACE_SIZE);
-  }
-
-  private int readBatchSize() {
-    return readInt("batch_size", DEFAULT_BATCH_SIZE);
   }
 
   private String readStr(String parameter) {

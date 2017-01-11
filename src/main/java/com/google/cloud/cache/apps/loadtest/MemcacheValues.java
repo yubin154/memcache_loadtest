@@ -2,9 +2,10 @@ package com.google.cloud.cache.apps.loadtest;
 
 import static com.google.common.collect.BoundType.OPEN;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 final class MemcacheValues {
   private static final String ASCII_LETTERS =
@@ -35,6 +36,14 @@ final class MemcacheValues {
 
   public static String randomKey() {
     return UUID.randomUUID().toString();
+  }
+
+  public static ImmutableList<String> randomKeys(int batchSize) {
+    ImmutableList.Builder keys = ImmutableList.builder();
+    for (int i = 0; i < batchSize; i++) {
+      keys.add(randomKey());
+    }
+    return keys.build();
   }
 
   private MemcacheValues() {}

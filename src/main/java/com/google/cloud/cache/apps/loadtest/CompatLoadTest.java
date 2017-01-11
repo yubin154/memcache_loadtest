@@ -3,9 +3,11 @@ package com.google.cloud.cache.apps.loadtest;
 import com.google.appengine.api.memcache.AsyncMemcacheService;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
@@ -23,17 +25,19 @@ final class CompatLoadTest extends BaseTest {
     this.syncClient = MemcacheServiceFactory.getMemcacheService();
   }
 
-  void startAsyncTest(final Range<Integer> valueSizeRange, final int numOfThreads)
+  void startAsyncTest(
+      final Range<Integer> valueSizeRange, final int numOfThreads, final int batchSize)
       throws Exception {
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
-      final String key = UUID.randomUUID().toString();
+      final ImmutableList<String> keys = MemcacheValues.randomKeys(batchSize);
       final Object value = MemcacheValues.random(valueSizeRange);
-      client.put(key, value);
+      for (String key : keys) {
+        client.put(key, value);
+      }
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker
-              .getExecutorService()
+          ExecutionTracker.getExecutorService()
               .submit(
                   new Runnable() {
                     @Override
@@ -41,9 +45,9 @@ final class CompatLoadTest extends BaseTest {
                       try {
                         while (!testStopped()) {
                           long start = System.nanoTime();
-                          Object obj = client.get(key);
+                          Map values = client.getAll(keys).get();
                           latencyTracker.recordLatency(System.nanoTime() - start);
-                          if (obj != null) {
+                          if (!values.isEmpty()) {
                             qpsTracker.incrementQps();
                           } else {
                             qpsTracker.incrementErrorCount();
@@ -68,8 +72,7 @@ final class CompatLoadTest extends BaseTest {
       syncClient.put(key, value);
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker
-              .getExecutorService()
+          ExecutionTracker.getExecutorService()
               .submit(
                   new Runnable() {
                     @Override
