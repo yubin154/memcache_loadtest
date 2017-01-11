@@ -25,7 +25,7 @@ public final class LatencyTracker {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(os);
     // Report micro-second, 2 ticks per half percentile.
-    histogram.outputPercentileDistribution(ps, 1, 1000.0);
+    histogram.outputPercentileDistribution(ps, 2, 1000.0);
     return new String(os.toByteArray(), "UTF-8");
   }
 
