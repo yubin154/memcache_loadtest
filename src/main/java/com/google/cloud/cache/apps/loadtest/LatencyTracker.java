@@ -4,14 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import org.HdrHistogram.Histogram;
-import org.LatencyUtils.LatencyStats;
 
-/**
- * Track latency distrituion
- */
+/** Track latency distrituion */
 public final class LatencyTracker {
 
-  private LatencyStats myOpStats = new LatencyStats();
+  // A Histogram covering the range from 1 nsec to 1 hour with 3 decimal point resolution:
+  private Histogram histogram = new Histogram(3600000000000L, 3);
 
   private LatencyTracker() {}
 
@@ -20,20 +18,18 @@ public final class LatencyTracker {
   }
 
   void recordLatency(long nanoTime) {
-    myOpStats.recordLatency(nanoTime);
+    histogram.recordValue(nanoTime);
   }
 
   String report() throws IOException {
-    // Later, report on stats collected:
-    Histogram intervalHistogram = myOpStats.getIntervalHistogram();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(os);
     // Report micro-second, 2 ticks per half percentile.
-    intervalHistogram.outputPercentileDistribution(ps, 2, 1000.0);
+    histogram.outputPercentileDistribution(ps, 1, 1000.0);
     return new String(os.toByteArray(), "UTF-8");
   }
 
   synchronized void reset() {
-    myOpStats = new LatencyStats();
+    histogram.reset();
   }
 }

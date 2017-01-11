@@ -58,6 +58,8 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
         tester.stopTest();
       }
       Thread.sleep(1000);
+      writer.write(String.format("Average QPS %s\n", qpsTracker.averageQps()));
+      writer.write(String.format("Error QPS %s\n", qpsTracker.averageErrors()));
       writer.write(latencyTracker.report());
       writer.write("\n");
     } catch (Exception e) {
