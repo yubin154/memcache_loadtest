@@ -3,11 +3,11 @@
   <version>2</version>
   <threadsafe>true</threadsafe>
   <env>flex</env>
-  <service>java-load-test</service>
+  <service>memcache-test</service>
   <resources>
-    <cpu>2</cpu>
-    <memory-gb>6</memory-gb>
-    <disk-size-gb>40</disk-size-gb>
+    <cpu>32</cpu>
+    <memory-gb>64</memory-gb>
+    <disk-size-gb>100</disk-size-gb>
   </resources>
   <automatic-scaling>
     <min-num-instances>1</min-num-instances>
