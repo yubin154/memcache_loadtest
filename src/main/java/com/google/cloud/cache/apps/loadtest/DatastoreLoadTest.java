@@ -37,7 +37,7 @@ final class DatastoreLoadTest extends BaseTest {
                           long start = System.nanoTime();
                           Entity entity = DatastoreStressOperations.read(client, key);
                           latencyTracker.recordLatency(System.nanoTime() - start);
-                          if (entity != null && entity.getKey().equals(key)) {
+                          if (entity != null && entity.getKey().getName().equals(key)) {
                             qpsTracker.incrementQps();
                           } else {
                             qpsTracker.incrementErrorCount();
