@@ -68,6 +68,10 @@
     <servlet-name>transcoderTest</servlet-name>
     <servlet-class>com.google.cloud.cache.apps.loadtest.TranscoderTestServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>datastoreLoadTest</servlet-name>
+    <servlet-class>com.google.cloud.cache.apps.loadtest.DatastoreLoadTestServlet</servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>delete</servlet-name>
@@ -120,5 +124,9 @@
   <servlet-mapping>
     <servlet-name>transcoderTest</servlet-name>
     <url-pattern>/transcodertest</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>datastoreLoadTest</servlet-name>
+    <url-pattern>/datastoreloadtest</url-pattern>
   </servlet-mapping>
 </web-app>
