@@ -1,6 +1,6 @@
 package com.google.cloud.cache.apps.loadtest;
 
-import com.google.appengine.api.memcache.transcoders.SpymemcachedSerializingTranscoder;
+//import com.google.appengine.api.memcache.transcoders.SpymemcachedSerializingTranscoder;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import net.spy.memcached.ConnectionFactoryBuilder;
@@ -27,7 +27,7 @@ abstract class SpyMemcachedBaseTest extends BaseTest {
 
   void setUp() throws Exception {
     ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
-    cfb.setTranscoder(new SpymemcachedSerializingTranscoder());
+    //cfb.setTranscoder(new SpymemcachedSerializingTranscoder());
     cfb.setProtocol(isAscii ? Protocol.TEXT : Protocol.BINARY);
     ArrayList<InetSocketAddress> servers = new ArrayList<>();
     servers.add(serverAddress);

@@ -22,11 +22,11 @@
       <artifactId>appengine-api-1.0-sdk</artifactId>
       <version>1.9.42</version>
     </dependency>
-    <dependency>
+    <!--<dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>memcache-transcoders</artifactId>
       <version>1.0-SNAPSHOT</version>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>net.spy</groupId>
       <artifactId>spymemcached</artifactId>
