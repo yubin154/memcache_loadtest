@@ -18,7 +18,7 @@
     <setting name="enable_app_engine_apis" value="True"/>
   </beta-settings>
   <env-variables>
-     <!-- .34.80 is nightly, .32.80 is qa  -->
-     <env-var name="MEMCACHE_CFE_ADDRESS" value="216.239.34.80:80"/>
+     <!-- .32.80 is nightly, .34.80 is qa  -->
+     <env-var name="MEMCACHE_CFE_ADDRESS" value="216.239.32.80:443"/>
   </env-variables>
 </appengine-web-app>
