@@ -18,6 +18,8 @@ public final class CompatLoadTestServlet extends HttpServlet {
       throws IOException {
     RequestReader reader = RequestReader.create(request);
     final ResponseWriter writer = ResponseWriter.create(response);
+    final ExecutionTracker qpsTracker = ExecutionTracker.newInstance();
+    final LatencyTracker latencyTracker = LatencyTracker.newInstance();
     try {
       final Range<Integer> valueSizeRange = reader.readValueSizeRange();
       final int durationSec = reader.readDurationSec();
@@ -29,8 +31,6 @@ public final class CompatLoadTestServlet extends HttpServlet {
           String.format(
               "Setup load test num_of_client=%s, duration=%s, fe_qps=%s, batch=%s\n",
               clientSize, durationSec, frontendQps, batchSize));
-      final ExecutionTracker qpsTracker = ExecutionTracker.newInstance();
-      final LatencyTracker latencyTracker = LatencyTracker.newInstance();
       List<CompatLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
         final CompatLoadTest loadTester =
@@ -66,7 +66,8 @@ public final class CompatLoadTestServlet extends HttpServlet {
     } catch (Exception e) {
       throw new IOException(e);
     }
-    writer.write("done\n");
+    double errorRate = qpsTracker.averageErrors() / qpsTracker.averageQps();
+    writer.write(errorRate >= 0.01 ? "FAIL\n" : "PASS\n");
     writer.flush();
   }
 }
