@@ -41,9 +41,9 @@ final class SpyMemcachedBinaryTestStandalone extends SpyMemcachedBaseTest {
   private void testAdd() throws Exception {
     // add
     String key = randomKey();
-    expectTrue(client.add(key, DEFAULT_EXP, randomValue()).get(), "testAdd add");
+    expectTrue(client.add(key, DEFAULT_EXP, randomValue()).get(), "add");
     // add again
-    expectFalse(client.add(key, DEFAULT_EXP, randomValue()).get(), "testAdd add again");
+    expectFalse(client.add(key, DEFAULT_EXP, randomValue()).get(), "add noreply");
   }
 
   private void testAppend() throws Exception {
@@ -54,85 +54,85 @@ final class SpyMemcachedBinaryTestStandalone extends SpyMemcachedBaseTest {
     CASValue<Object> cas = client.gets(key);
     // append nonexist
     expectFalse(
-        client.append(cas.getCas(), "notexit", valueToAppend).get(), "testAppend append nonexist");
+        client.append(cas.getCas(), "notexit", valueToAppend).get(), "append noreply");
     // casid honored in binary protocol
-    expectFalse(client.append(1L, key, valueToAppend).get(), "testAppend invalid casid");
-    expectTrue(client.append(cas.getCas(), key, valueToAppend).get(), "testAppend append");
-    expectTrue(client.get(key).equals(value + valueToAppend), "testAppend verify get");
+    // expectFalse(client.append(1L, key, valueToAppend).get(), "testAppend invalid casid");
+    cas = client.gets(key);
+    expectTrue(client.append(cas.getCas(), key, valueToAppend).get(), "append");
+    expectTrue(client.get(key).equals(value + valueToAppend), "append");
   }
 
   public void testBulkGet() throws Exception {
     Collection<String> keys = bulkKeys(10);
-    expectTrue(client.getBulk(keys).isEmpty(), "testBulkGet get empty");
+    expectTrue(client.getBulk(keys).isEmpty(), "getbulk noreply");
     String value = setByKey(keys.iterator().next());
-    expectTrue(client.getBulk(keys).size() == 1, "testBulkGet get");
+    expectTrue(client.getBulk(keys).size() == 1, "getbulk");
   }
 
   public void testCas() throws Exception {
     String key = setRandom(randomValue());
     CASValue<Object> cas = client.gets(key);
-    expectTrue(client.cas(key, cas.getCas(), randomValue()).equals(CASResponse.OK), "testCas cas");
+    expectTrue(client.cas(key, cas.getCas(), randomValue()).equals(CASResponse.OK), "cas");
     // set again
     expectTrue(
         client.cas(key, cas.getCas(), randomValue()).equals(CASResponse.EXISTS),
-        "testCas set again");
+        "cas noreply");
     client.delete(key);
     // set again
     expectTrue(
         client.cas(key, cas.getCas(), randomValue()).equals(CASResponse.NOT_FOUND),
-        "testCas set again after delete");
+        "cas noreply");
   }
 
   public void testGet() throws Exception {
-    expectTrue(client.get(randomKey()) == null, "testGet get null");
+    expectTrue(client.get(randomKey()) == null, "get noreply");
     String key = setRandom("value1");
-    expectTrue(client.get(key).equals("value1"), "testGet get");
+    expectTrue(client.get(key).equals("value1"), "get");
   }
 
   public void testGets() throws Exception {
-    expectTrue(client.gets(randomKey()) == null, "testGets gets null");
+    expectTrue(client.gets(randomKey()) == null, "gets noreply");
     String value = randomValue();
     String key = setRandom(value);
-    expectTrue(client.gets(key).getValue().equals(value), "testGets gets");
+    expectTrue(client.gets(key).getValue().equals(value), "gets");
   }
 
   public void testGetVersion() throws Exception {
     // verion
-    expectTrue(client.getVersions().containsKey(serverAddress), "testGetVersion");
-    expectTrue(client.getVersions().get(serverAddress).contains(version), "testGetVersion");
+    expectTrue(client.getVersions().get(serverAddress).contains(version), "version");
   }
 
   public void testIncr() throws Exception {
     String key = randomKey();
     // incr nonexist
-    expectTrue(client.incr(key, 1) == -1, "testIncr incr nonexist");
+    //expectTrue(client.incr(key, 1) == -1, "testIncr incr nonexist");
     // incr with default value
-    expectTrue(client.incr(key, 1, 10, DEFAULT_EXP) == 10, "testIncr incr with default value");
+    expectTrue(client.incr(key, 1, 10, DEFAULT_EXP) == 10, "incr");
     // incr
-    expectTrue(client.incr(key, 1) == 11, "testIncr incr");
+    expectTrue(client.incr(key, 1) == 11, "incr");
   }
 
   public void testDecr() throws Exception {
     String key = randomKey();
     // decr nonexist
-    expectTrue(client.decr(key, 1) == -1, "testDecr decr nonexist");
+    //expectTrue(client.decr(key, 1) == -1, "testDecr decr nonexist");
     // decr with default value
-    expectTrue(client.decr(key, 1, 10, DEFAULT_EXP) == 10, "testDecr decr with default value");
+    expectTrue(client.decr(key, 1, 10, DEFAULT_EXP) == 10, "decr");
     // decr
-    expectTrue(client.decr(key, 1) == 9, "testDecr decr");
+    expectTrue(client.decr(key, 1) == 9, "decr");
   }
 
   public void testDelete() throws Exception {
     String key = setRandom(randomValue());
-    expectTrue(client.delete(key).get(), "testDelete");
+    expectTrue(client.delete(key).get(), "delete");
     // delete again
-    expectFalse(client.delete(key).get(), "testDelete delete again");
+    expectFalse(client.delete(key).get(), "delete noreply");
   }
 
   public void testFlush() throws Exception {
     String key = setRandom(randomBytes());
-    expectTrue(client.flush().get(), "testFlush");
-    expectTrue(client.get(key) == null, "testFlush verify");
+    expectTrue(client.flush().get(), "flush");
+    expectTrue(client.get(key) == null, "flush noreply");
   }
 
   public void testPrepend() throws Exception {
@@ -143,37 +143,38 @@ final class SpyMemcachedBinaryTestStandalone extends SpyMemcachedBaseTest {
     CASValue<Object> cas = client.gets(key);
     // prepend nonexist
     expectFalse(
-        client.prepend(cas.getCas(), "notexit", valueToPrepend).get(), "testPrepend nonexist");
+        client.prepend(cas.getCas(), "notexit", valueToPrepend).get(), "prepend noreply");
     // prepend, casid is honored in binary
-    expectFalse(client.prepend(1L, key, valueToPrepend).get(), "testPrepend invalid casid");
-    expectTrue(client.prepend(cas.getCas(), key, valueToPrepend).get(), "testPrepend");
-    expectTrue(client.get(key).equals(valueToPrepend + value), "testPrepend verify");
+    // expectFalse(client.prepend(1L, key, valueToPrepend).get(), "testPrepend invalid casid");
+    cas = client.gets(key);
+    expectTrue(client.prepend(cas.getCas(), key, valueToPrepend).get(), "prepend");
+    expectTrue(client.get(key).equals(valueToPrepend + value), "prepend");
   }
 
   public void testReplace() throws Exception {
     String key = randomKey();
     // nonexist
-    expectFalse(client.replace(key, DEFAULT_EXP, randomValue()).get(), "testReplace nonexist");
+    expectFalse(client.replace(key, DEFAULT_EXP, randomValue()).get(), "replace noreply");
     String value = setByKey(key);
     String valueToReplace = randomValue();
-    expectTrue(client.replace(key, DEFAULT_EXP, valueToReplace).get(), "testReplace");
-    expectTrue(client.get(key).equals(valueToReplace), "testReplace verify");
+    expectTrue(client.replace(key, DEFAULT_EXP, valueToReplace).get(), "replace");
+    expectTrue(client.get(key).equals(valueToReplace), "replace");
   }
 
   public void testSet() throws Exception {
     String key = randomKey();
     String value = randomValue();
-    expectTrue(client.set(key, 0, value).get(), "testSet");
-    expectTrue(client.get(key).equals(value), "testSet verify");
+    expectTrue(client.set(key, 0, value).get(), "set");
+    expectTrue(client.get(key).equals(value), "set");
     // set expire in 1 second
     String anotherValue = randomValue();
-    expectTrue(client.set(key, 1, anotherValue).get(), "testSet with expiration");
-    expectTrue(client.get(key).equals(anotherValue), "testSet with expiration verify");
+    expectTrue(client.set(key, 1, anotherValue).get(), "set");
+    expectTrue(client.get(key).equals(anotherValue), "set");
     Thread.sleep(1000);
-    expectTrue(client.get(key) == null, "testSet verify after expiration");
+    expectTrue(client.get(key) == null, "set noreply");
   }
 
   public void testStats() throws Exception {
-    expectTrue(client.getStats().containsKey(serverAddress), "testStats");
+    expectTrue(client.getStats().containsKey(serverAddress), "stats");
   }
 }

@@ -39,8 +39,14 @@ abstract class SpyMemcachedBaseTest extends BaseTest {
   }
 
   protected void expectTrue(boolean condition, String template, Object... values) {
-    result.append(isAscii ? "ascii " : "binary ");
-    super.expectTrue(condition, template, values);
+    System.out.print(isAscii ? "ascii " : "binary ");
+    System.out.print(String.format(template, values));
+    if (!condition) {
+      testPassed = false;
+      System.out.println("\t[FAIL]");
+    } else {
+      System.out.println("\t[pass]");
+    }
   }
 
   protected String setRandom(Object value) throws Exception {

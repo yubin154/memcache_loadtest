@@ -3,22 +3,22 @@
   <version>2</version>
   <threadsafe>true</threadsafe>
   <env>flex</env>
-  <service>memcache-m1-staging-test</service>
+  <service>memcache-e2etest-loadrunner1</service>
   <resources>
-    <cpu>4</cpu>
-    <memory-gb>20</memory-gb>
+    <cpu>8</cpu>
+    <memory-gb>40</memory-gb>
     <disk-size-gb>100</disk-size-gb>
   </resources>
   <automatic-scaling>
-    <min-num-instances>1</min-num-instances>
-    <max-num-instances>1</max-num-instances>
+    <min-num-instances>3</min-num-instances>
+    <max-num-instances>3</max-num-instances>
   </automatic-scaling>
   <beta-settings>
-    <setting name="source_reference" value="https://github.com/yubin154/java-docs-samples.git#03821c13c85cc319578407935f36920b03ea6c3e"/>
+    <setting name="source_reference" value="https://github.com/yubin154/memcache_loadteset.git"/>
     <setting name="enable_app_engine_apis" value="True"/>
   </beta-settings>
   <env-variables>
      <!-- .32.80 is nightly, .34.80 is qa, .36.80 is prod  -->
-     <env-var name="MEMCACHE_CFE_ADDRESS" value="216.239.34.80:80"/>
+     <env-var name="MEMCACHE_CFE_ADDRESS" value="216.239.36.80:80"/>
   </env-variables>
 </appengine-web-app>

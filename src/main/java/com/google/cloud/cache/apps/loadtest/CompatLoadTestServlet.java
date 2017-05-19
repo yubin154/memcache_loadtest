@@ -33,8 +33,7 @@ public final class CompatLoadTestServlet extends HttpServlet {
               clientSize, durationSec, frontendQps, batchSize));
       List<CompatLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
-        final CompatLoadTest loadTester =
-            new CompatLoadTest(qpsTracker, latencyTracker);
+        final CompatLoadTest loadTester = new CompatLoadTest(qpsTracker, latencyTracker);
         testers.add(loadTester);
         new Thread(
                 new Runnable() {
@@ -67,7 +66,8 @@ public final class CompatLoadTestServlet extends HttpServlet {
       throw new IOException(e);
     }
     double errorRate = qpsTracker.averageErrors() / qpsTracker.averageQps();
-    writer.write(errorRate >= 0.01 ? "FAIL\n" : "PASS\n");
+    // Test fail if throughput is low or error rate is high
+    writer.write((qpsTracker.averageQps() < 100 || errorRate >= 0.01) ? "FAIL\n" : "PASS\n");
     writer.flush();
   }
 }
