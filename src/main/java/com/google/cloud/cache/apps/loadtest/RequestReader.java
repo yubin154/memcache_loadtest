@@ -17,6 +17,7 @@ final class RequestReader {
   private static final int DEFAULT_DURATION_SEC = 0;
   private static final int DEFAULT_FRONTEND_QPS = 1;
   private static final int DEFAULT_CLIENT_SIZE = 1;
+  private static final int DEFAULT_RETRY_ATTEMPT = 0;
 
   private static final double SIZE_TOLERANCE = 0.1;
 
@@ -55,6 +56,10 @@ final class RequestReader {
 
   boolean isMemcacheg() {
     return "g".equalsIgnoreCase(readStr("client"));
+  }
+
+  int retryAttempt() {
+    return readInt("retry", DEFAULT_RETRY_ATTEMPT);
   }
 
   /** Gets min and max value sizes from request; use defaults if not specified. */

@@ -26,7 +26,10 @@ final class CompatLoadTest extends BaseTest {
   }
 
   void startAsyncTest(
-      final Range<Integer> valueSizeRange, final int numOfThreads, final int batchSize)
+      final Range<Integer> valueSizeRange,
+      final int numOfThreads,
+      final int batchSize,
+      final int retryAttempt)
       throws Exception {
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
@@ -43,14 +46,21 @@ final class CompatLoadTest extends BaseTest {
                     @Override
                     public void run() {
                       try {
+                        int currentRetryAttempt = 0;
                         while (!testStopped()) {
                           long start = System.nanoTime();
                           Map values = client.getAll(keys).get();
                           latencyTracker.recordLatency(System.nanoTime() - start);
                           if (!values.isEmpty()) {
                             qpsTracker.incrementQps();
+                            if (currentRetryAttempt > 0) {
+                              currentRetryAttempt = 0;
+                            }
                           } else {
-                            qpsTracker.incrementErrorCount();
+                            if (currentRetryAttempt++ > retryAttempt) {
+                              qpsTracker.incrementErrorCount();
+                              currentRetryAttempt = 0;
+                            }
                           }
                         }
                       } catch (Throwable t) {
@@ -64,7 +74,9 @@ final class CompatLoadTest extends BaseTest {
     }
   }
 
-  void startSyncTest(final Range<Integer> valueSizeRange, final int numOfThreads) throws Exception {
+  void startSyncTest(
+      final Range<Integer> valueSizeRange, final int numOfThreads, final int retryAttempt)
+      throws Exception {
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
       final String key = UUID.randomUUID().toString();
@@ -79,13 +91,20 @@ final class CompatLoadTest extends BaseTest {
                     public void run() {
                       try {
                         while (!testStopped()) {
+                          int currentRetryAttempt = 0;
                           long start = System.nanoTime();
                           Object obj = syncClient.get(key);
                           latencyTracker.recordLatency(System.nanoTime() - start);
                           if (obj != null) {
                             qpsTracker.incrementQps();
+                            if (currentRetryAttempt > 0) {
+                              currentRetryAttempt = 0;
+                            }
                           } else {
-                            qpsTracker.incrementErrorCount();
+                            if (currentRetryAttempt++ > retryAttempt) {
+                              qpsTracker.incrementErrorCount();
+                              currentRetryAttempt = 0;
+                            }
                           }
                         }
                       } catch (Throwable t) {

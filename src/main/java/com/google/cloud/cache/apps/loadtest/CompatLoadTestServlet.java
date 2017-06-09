@@ -26,11 +26,12 @@ public final class CompatLoadTestServlet extends HttpServlet {
       final int frontendQps = reader.readFrontendQps();
       final int clientSize = reader.readClientSize();
       final int batchSize = reader.readBatchSize();
+      final int retryAttempt = reader.retryAttempt();
 
       writer.write(
           String.format(
-              "Setup load test num_of_client=%s, duration=%s, fe_qps=%s, batch=%s\n",
-              clientSize, durationSec, frontendQps, batchSize));
+              "Setup load test num_of_client=%s, duration=%s, fe_qps=%s, batch=%s, retry=%s\n",
+              clientSize, durationSec, frontendQps, batchSize, retryAttempt));
       List<CompatLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
         final CompatLoadTest loadTester = new CompatLoadTest(qpsTracker, latencyTracker);
@@ -40,7 +41,8 @@ public final class CompatLoadTestServlet extends HttpServlet {
                   @Override
                   public void run() {
                     try {
-                      loadTester.startAsyncTest(valueSizeRange, frontendQps, batchSize);
+                      loadTester.startAsyncTest(
+                          valueSizeRange, frontendQps, batchSize, retryAttempt);
                     } catch (Exception e) {
                       logger.severe(e.getMessage());
                     }
@@ -58,8 +60,11 @@ public final class CompatLoadTestServlet extends HttpServlet {
         tester.stopTest();
       }
       Thread.sleep(1000);
-      writer.write(String.format("Average QPS %s\n", qpsTracker.averageQps()));
-      writer.write(String.format("Error QPS %s\n", qpsTracker.averageErrors()));
+      writer.write(String.format("QPS %s\n", qpsTracker.averageQps()));
+      writer.write(String.format("ErrorQPS %s\n", qpsTracker.averageErrors()));
+      writer.write(
+          String.format(
+              "ErrorRate %.4f\n", (qpsTracker.averageErrors() / qpsTracker.averageQps())));
       writer.write(latencyTracker.report());
       writer.write("\n");
     } catch (Exception e) {
