@@ -4,6 +4,7 @@ import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 final class MemcachedLoadTest extends SpyMemcachedBaseTest {
@@ -22,30 +23,48 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
     this.latencyTracker = latencyTracker;
   }
 
-  void startTest(final Range<Integer> valueSizeRange, final int numOfThreads) throws Exception {
+  void startTest(
+      final Range<Integer> valueSizeRange, final int numOfThreads, final int retryAttempt)
+      throws Exception {
     this.setUp();
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
-      final String key = UUID.randomUUID().toString();
-      final Object value = MemcacheValues.random(valueSizeRange);
-      client.set(key, 0, value).get();
       qpsTracker.incrementQps();
       futures.add(
-          ExecutionTracker
-              .getExecutorService()
+          ExecutionTracker.getExecutorService()
               .submit(
                   new Runnable() {
                     @Override
                     public void run() {
+                      int retryCounter = 0;
                       try {
+                        String key = randomSet(valueSizeRange);
                         while (!testStopped()) {
-                          long start = System.nanoTime();
-                          Object obj = client.get(key);
-                          latencyTracker.recordLatency(System.nanoTime() - start);
-                          if (obj != null) {
-                            qpsTracker.incrementQps();
-                          } else {
-                            qpsTracker.incrementErrorCount();
+                          try {
+                            long start = System.nanoTime();
+                            Object obj = client.get(key);
+                            latencyTracker.recordLatency(System.nanoTime() - start);
+                            if (obj != null) {
+                              // Get hit
+                              qpsTracker.incrementQps();
+                              if (retryCounter > 0) {
+                                retryCounter = 0;
+                              }
+                            } else {
+                              // Get miss, retry up to retryAttempt
+                              if (++retryCounter > retryAttempt) {
+                                qpsTracker.incrementMissCount();
+                                retryCounter = 0;
+                                key = randomSet(valueSizeRange);
+                              }
+                            }
+                          } catch (Exception e) {
+                            // Checked exception including RPC errors, retry up to retryAttempt
+                            if (++retryCounter > retryAttempt) {
+                              qpsTracker.incrementErrorCount();
+                              retryCounter = 0;
+                              key = randomSet(valueSizeRange);
+                            }
                           }
                         }
                       } catch (Throwable t) {
@@ -58,5 +77,12 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
       future.get();
     }
     this.tearDown();
+  }
+
+  String randomSet(Range<Integer> valueSizeRange) throws InterruptedException, ExecutionException {
+    final String key = UUID.randomUUID().toString();
+    final Object value = MemcacheValues.random(valueSizeRange);
+    client.set(key, 0, value).get();
+    return key;
   }
 }

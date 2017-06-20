@@ -18,6 +18,8 @@ final class RequestReader {
   private static final int DEFAULT_FRONTEND_QPS = 1;
   private static final int DEFAULT_CLIENT_SIZE = 1;
   private static final int DEFAULT_RETRY_ATTEMPT = 0;
+  // default to GAE memcache host
+  private static final String DEFAULT_MEMCACHED_HOST = "35.190.255.1";
 
   private static final double SIZE_TOLERANCE = 0.1;
 
@@ -86,6 +88,10 @@ final class RequestReader {
     return readInt("batch_size", DEFAULT_BATCH_SIZE);
   }
 
+  String readMemcachedHost() {
+    return readStr("memcached_host", DEFAULT_MEMCACHED_HOST);
+  }
+
   /** Generate a random key. * */
   private static String randomKey(int keySpaceSize) {
     return "Key_" + ThreadLocalRandom.current().nextInt(keySpaceSize);
@@ -97,6 +103,14 @@ final class RequestReader {
 
   private String readStr(String parameter) {
     return request.getParameter(parameter);
+  }
+
+  private String readStr(String parameter, String defaultValue) {
+    if (readStr(parameter) == null || readStr(parameter).isEmpty()) {
+      return defaultValue;
+    } else {
+      return readStr(parameter);
+    }
   }
 
   private int readInt(String parameter, int defaultValue) {
