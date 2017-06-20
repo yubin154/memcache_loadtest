@@ -33,37 +33,45 @@ final class CompatLoadTest extends BaseTest {
       throws Exception {
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
-      final ImmutableList<String> keys = MemcacheValues.randomKeys(batchSize);
-      final Object value = MemcacheValues.random(valueSizeRange);
-      for (String key : keys) {
-        client.put(key, value);
-      }
-      qpsTracker.incrementQps();
       futures.add(
           ExecutionTracker.getExecutorService()
               .submit(
                   new Runnable() {
                     @Override
                     public void run() {
+                      ImmutableList<String> keys = randomSet(valueSizeRange, batchSize);
                       try {
                         int currentRetryAttempt = 0;
                         while (!testStopped()) {
-                          long start = System.nanoTime();
-                          Map values = client.getAll(keys).get();
-                          latencyTracker.recordLatency(System.nanoTime() - start);
-                          if (!values.isEmpty()) {
-                            qpsTracker.incrementQps();
-                            if (currentRetryAttempt > 0) {
-                              currentRetryAttempt = 0;
+                          try {
+                            long start = System.nanoTime();
+                            Map values = client.getAll(keys).get();
+                            latencyTracker.recordLatency(System.nanoTime() - start);
+                            if (!values.isEmpty()) {
+                              // GET hit
+                              qpsTracker.incrementQps();
+                              if (currentRetryAttempt > 0) {
+                                currentRetryAttempt = 0;
+                              }
+                            } else {
+                              // GET miss, retry up to retryAttempt
+                              if (++currentRetryAttempt > retryAttempt) {
+                                qpsTracker.incrementMissCount();
+                                currentRetryAttempt = 0;
+                                keys = randomSet(valueSizeRange, batchSize);
+                              }
                             }
-                          } else {
-                            if (currentRetryAttempt++ > retryAttempt) {
+                          } catch (Exception e) {
+                            // Errors including RPC errors, retry up to retryAttempt
+                            if (++currentRetryAttempt > retryAttempt) {
                               qpsTracker.incrementErrorCount();
                               currentRetryAttempt = 0;
+                              keys = randomSet(valueSizeRange, batchSize);
                             }
                           }
                         }
                       } catch (Throwable t) {
+                        // Unknown errors
                         qpsTracker.incrementErrorCount();
                       }
                     }
@@ -74,9 +82,7 @@ final class CompatLoadTest extends BaseTest {
     }
   }
 
-  void startSyncTest(
-      final Range<Integer> valueSizeRange, final int numOfThreads, final int retryAttempt)
-      throws Exception {
+  void startSyncTest(final Range<Integer> valueSizeRange, final int numOfThreads) throws Exception {
     List<Future> futures = new ArrayList<>();
     for (int i = 0; i < numOfThreads; ++i) {
       final String key = UUID.randomUUID().toString();
@@ -91,20 +97,13 @@ final class CompatLoadTest extends BaseTest {
                     public void run() {
                       try {
                         while (!testStopped()) {
-                          int currentRetryAttempt = 0;
                           long start = System.nanoTime();
                           Object obj = syncClient.get(key);
                           latencyTracker.recordLatency(System.nanoTime() - start);
                           if (obj != null) {
                             qpsTracker.incrementQps();
-                            if (currentRetryAttempt > 0) {
-                              currentRetryAttempt = 0;
-                            }
                           } else {
-                            if (currentRetryAttempt++ > retryAttempt) {
-                              qpsTracker.incrementErrorCount();
-                              currentRetryAttempt = 0;
-                            }
+                            qpsTracker.incrementErrorCount();
                           }
                         }
                       } catch (Throwable t) {
@@ -116,5 +115,15 @@ final class CompatLoadTest extends BaseTest {
     for (Future future : futures) {
       future.get();
     }
+  }
+
+  ImmutableList<String> randomSet(final Range<Integer> valueSizeRange, final int batchSize) {
+    ImmutableList<String> keys = MemcacheValues.randomKeys(batchSize);
+    Object value = MemcacheValues.random(valueSizeRange);
+    for (String key : keys) {
+      client.put(key, value);
+    }
+    qpsTracker.incrementQps();
+    return keys;
   }
 }

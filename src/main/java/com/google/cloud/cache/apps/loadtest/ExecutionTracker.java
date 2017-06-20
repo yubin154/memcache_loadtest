@@ -16,8 +16,10 @@ public class ExecutionTracker {
 
   private AtomicInteger qpsCounter = new AtomicInteger(0);
   private AtomicInteger errorCounter = new AtomicInteger(0);
+  private AtomicInteger missCounter = new AtomicInteger(0);
   private List<Integer> qpsMeasures = new ArrayList<>();
   private List<Integer> errorMeasures = new ArrayList<>();
+  private List<Integer> missMeasures = new ArrayList<>();
 
   private ExecutionTracker() {}
 
@@ -41,6 +43,16 @@ public class ExecutionTracker {
     errorCounter.incrementAndGet();
   }
 
+  public int getAndResetMissCount() {
+    int missMeasure = missCounter.getAndSet(0);
+    missMeasures.add(missMeasure);
+    return missMeasure;
+  }
+
+  public void incrementMissCount() {
+    missCounter.incrementAndGet();
+  }
+
   public double averageQps() {
     OptionalDouble average = qpsMeasures.stream().mapToDouble(i -> i).average();
     return average.isPresent() ? average.getAsDouble() : 0;
@@ -48,6 +60,11 @@ public class ExecutionTracker {
 
   public double averageErrors() {
     OptionalDouble average = errorMeasures.stream().mapToDouble(i -> i).average();
+    return average.isPresent() ? average.getAsDouble() : 0;
+  }
+
+  public double averageMisses() {
+    OptionalDouble average = missMeasures.stream().mapToDouble(i -> i).average();
     return average.isPresent() ? average.getAsDouble() : 0;
   }
 

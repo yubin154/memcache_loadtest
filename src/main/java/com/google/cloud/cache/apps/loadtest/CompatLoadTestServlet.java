@@ -61,6 +61,7 @@ public final class CompatLoadTestServlet extends HttpServlet {
       }
       Thread.sleep(1000);
       writer.write(String.format("QPS %s\n", qpsTracker.averageQps()));
+      writer.write(String.format("MissQPS %s\n", qpsTracker.averageMisses()));
       writer.write(String.format("ErrorQPS %s\n", qpsTracker.averageErrors()));
       writer.write(
           String.format(
