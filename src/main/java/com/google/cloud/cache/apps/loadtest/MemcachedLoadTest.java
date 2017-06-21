@@ -16,9 +16,10 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
       String server,
       int port,
       String version,
+      boolean requireSasl,
       ExecutionTracker qpsTracker,
       LatencyTracker latencyTracker) {
-    super(server, port, version, false);
+    super(server, port, version, false, requireSasl);
     this.qpsTracker = qpsTracker;
     this.latencyTracker = latencyTracker;
   }

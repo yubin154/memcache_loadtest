@@ -60,6 +60,10 @@ final class RequestReader {
     return "g".equalsIgnoreCase(readStr("client"));
   }
 
+  boolean requireSasl() {
+    return "true".equalsIgnoreCase(readStr("sasl"));
+  }
+
   int retryAttempt() {
     return readInt("retry", DEFAULT_RETRY_ATTEMPT);
   }

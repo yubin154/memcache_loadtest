@@ -1,13 +1,18 @@
 package com.google.cloud.cache.apps.loadtest;
 
-//import com.google.appengine.api.memcache.transcoders.SpymemcachedSerializingTranscoder;
+// import com.google.appengine.api.memcache.transcoders.SpymemcachedSerializingTranscoder;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.auth.AuthDescriptor;
 
 abstract class SpyMemcachedBaseTest extends BaseTest {
+
+  private static Object SASL_INITIALIZAQTION_LOCK = new Object();
+  private static boolean SASL_INITIALIZED = false;
 
   private static final String LEASE_KEY = "LEASE";
   private static final int LEASE_TIMEOUT_SEC = 200;
@@ -16,18 +21,40 @@ abstract class SpyMemcachedBaseTest extends BaseTest {
   protected InetSocketAddress serverAddress;
   protected String version;
   protected boolean isAscii;
+  protected boolean requireSasl;
 
   protected MemcachedClient client;
 
   public SpyMemcachedBaseTest(String server, int port, String version, boolean isAscii) {
+    this(server, port, version, isAscii, false);
+  }
+
+  public SpyMemcachedBaseTest(
+      String server, int port, String version, boolean isAscii, boolean requireSasl) {
     this.serverAddress = new InetSocketAddress(server, port);
     this.version = version;
     this.isAscii = isAscii;
+    this.requireSasl = requireSasl;
   }
 
   void setUp() throws Exception {
     ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
-    //cfb.setTranscoder(new SpymemcachedSerializingTranscoder());
+    if (requireSasl) {
+      if (isAscii) {
+        throw new IllegalArgumentException("Binary protocal required for SASL");
+      }
+      synchronized (SASL_INITIALIZAQTION_LOCK) {
+        if (!SASL_INITIALIZED) {
+          com.google.cloud.memcache.Authentication.initialize();
+          SASL_INITIALIZED = true;
+        }
+      }
+      cfb.setProtocol(ConnectionFactoryBuilder.Protocol.BINARY);
+      cfb.setAuthDescriptor(
+          new AuthDescriptor(
+              new String[] {com.google.cloud.memcache.Authentication.MECHANISM}, null));
+    }
+    // cfb.setTranscoder(new SpymemcachedSerializingTranscoder());
     cfb.setProtocol(isAscii ? Protocol.TEXT : Protocol.BINARY);
     ArrayList<InetSocketAddress> servers = new ArrayList<>();
     servers.add(serverAddress);
@@ -89,5 +116,4 @@ abstract class SpyMemcachedBaseTest extends BaseTest {
       t.printStackTrace();
     }
   }
-
 }

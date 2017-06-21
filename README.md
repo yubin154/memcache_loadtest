@@ -15,4 +15,8 @@ parameters.
 Run memcached conformance tests
 
     java -jar bin/spymemcached_conformance_test.jar -s server -p port -v 1.4.22
+    
+Run with Auth plugin, download plugin, install plugin, then build
+
+    mvn install:install-file -Dfile=path_to_plugin.jar -DgroupId=<groupId> -DartifactId=<artifactId> -Dversion=1.0-SNAPSHOT -Dpackaging=jar
 

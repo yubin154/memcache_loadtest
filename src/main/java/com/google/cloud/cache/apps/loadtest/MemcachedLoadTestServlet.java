@@ -27,6 +27,7 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       final int frontendQps = reader.readFrontendQps();
       final int retryAttempt = reader.retryAttempt();
       final String memcachedHost = reader.readMemcachedHost();
+      final boolean requireSasl = reader.requireSasl();
       int clientSize = reader.readClientSize();
 
       writer.write(
@@ -36,7 +37,8 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       List<MemcachedLoadTest> testers = new ArrayList<>();
       for (int i = 0; i < clientSize; i++) {
         final MemcachedLoadTest loadTester =
-            new MemcachedLoadTest(memcachedHost, 11211, "1.4.22", qpsTracker, latencyTracker);
+            new MemcachedLoadTest(
+                memcachedHost, 11211, "1.4.22", requireSasl, qpsTracker, latencyTracker);
         testers.add(loadTester);
         new Thread(
                 new Runnable() {
