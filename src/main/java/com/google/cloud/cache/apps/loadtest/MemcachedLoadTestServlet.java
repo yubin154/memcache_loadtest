@@ -56,6 +56,9 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
       qpsTracker.getAndResetQps();
       for (int i = 0; i <= durationSec; i++) {
         Thread.sleep(1000);
+        qpsTracker.getAndResetQps();
+        qpsTracker.getAndResetErrorCount();
+        qpsTracker.getAndResetMissCount();
       }
       for (MemcachedLoadTest tester : testers) {
         tester.stopTest();

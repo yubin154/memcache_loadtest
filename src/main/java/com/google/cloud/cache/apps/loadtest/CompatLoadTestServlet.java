@@ -55,6 +55,7 @@ public final class CompatLoadTestServlet extends HttpServlet {
         Thread.sleep(1000);
         qpsTracker.getAndResetQps();
         qpsTracker.getAndResetErrorCount();
+        qpsTracker.getAndResetMissCount();
       }
       for (CompatLoadTest tester : testers) {
         tester.stopTest();
