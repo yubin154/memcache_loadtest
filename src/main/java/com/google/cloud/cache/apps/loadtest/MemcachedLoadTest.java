@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 final class MemcachedLoadTest extends SpyMemcachedBaseTest {
 
   private ExecutionTracker qpsTracker;
   private LatencyTracker latencyTracker;
+  private AtomicLong errorCounter = new AtomicLong(0);
+  private AtomicLong missCounter = new AtomicLong(0);
 
   MemcachedLoadTest(
       String server,
@@ -57,6 +60,10 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                                 qpsTracker.incrementMissCount();
                                 retryCounter = 0;
                                 key = randomSet(valueSizeRange);
+                                System.out.println(
+                                    String.format(
+                                        "Retry-%s MissCount=%s",
+                                        retryAttempt, missCounter.incrementAndGet()));
                               }
                             }
                           } catch (Exception e) {
@@ -65,6 +72,11 @@ final class MemcachedLoadTest extends SpyMemcachedBaseTest {
                               qpsTracker.incrementErrorCount();
                               retryCounter = 0;
                               key = randomSet(valueSizeRange);
+                              System.out.println(
+                                  String.format(
+                                      "Retry-%s ErrorCount=%s",
+                                      retryAttempt, errorCounter.incrementAndGet()));
+                              e.printStackTrace();
                             }
                           }
                         }
