@@ -64,15 +64,15 @@ public final class MemcachedLoadTestServlet extends HttpServlet {
         tester.stopTest();
       }
       Thread.sleep(1000);
-      writer.write(String.format("QPS %s\n", qpsTracker.averageQps()));
-      writer.write(String.format("MissQPS %s\n", qpsTracker.averageMisses()));
+      writer.write(String.format("%s QPS\n", qpsTracker.averageQps()));
+      writer.write(String.format("%s MissQPS\n", qpsTracker.averageMisses()));
       writer.write(
           String.format(
-              "MissRate %.4f\n", (qpsTracker.averageMisses() / qpsTracker.averageQps())));
-      writer.write(String.format("ErrorQPS %s\n", qpsTracker.averageErrors()));
+              "%.4f MissRate\n", (qpsTracker.averageMisses() / qpsTracker.averageQps())));
+      writer.write(String.format("%s ErrorQPS\n", qpsTracker.averageErrors()));
       writer.write(
           String.format(
-              "ErrorRate %.4f\n", (qpsTracker.averageErrors() / qpsTracker.averageQps())));
+              "%.4f ErrorRate\n", (qpsTracker.averageErrors() / qpsTracker.averageQps())));
       writer.write(latencyTracker.report());
       writer.write("\n");
     } catch (Exception e) {
