@@ -42,6 +42,10 @@ final class RequestReader {
     return key;
   }
 
+  java.io.Serializable readSerializableKey() {
+    return randomObjectKey();
+  }
+
   ImmutableList<String> readKeys() {
     ImmutableList.Builder<String> builder = ImmutableList.builder();
     int keySpaceSize = readKeySpaceSize();
@@ -62,6 +66,10 @@ final class RequestReader {
 
   boolean requireSasl() {
     return "true".equalsIgnoreCase(readStr("sasl"));
+  }
+
+  boolean useObjectAsKey() {
+    return "true".equalsIgnoreCase(readStr("use_object_key"));
   }
 
   int retryAttempt() {
@@ -99,6 +107,10 @@ final class RequestReader {
   /** Generate a random key. * */
   private static String randomKey(int keySpaceSize) {
     return "Key_" + ThreadLocalRandom.current().nextInt(keySpaceSize);
+  }
+
+  private static java.io.Serializable randomObjectKey() {
+    return new java.util.Date();
   }
 
   private int readKeySpaceSize() {

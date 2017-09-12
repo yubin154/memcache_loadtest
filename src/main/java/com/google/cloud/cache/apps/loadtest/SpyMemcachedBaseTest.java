@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.auth.AuthDescriptor;
 
 abstract class SpyMemcachedBaseTest extends BaseTest {
 
@@ -39,21 +38,22 @@ abstract class SpyMemcachedBaseTest extends BaseTest {
 
   void setUp() throws Exception {
     ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
-    if (requireSasl) {
-      if (isAscii) {
-        throw new IllegalArgumentException("Binary protocal required for SASL");
-      }
-      synchronized (SASL_INITIALIZAQTION_LOCK) {
-        if (!SASL_INITIALIZED) {
-          com.google.cloud.memcache.Authentication.initialize();
-          SASL_INITIALIZED = true;
-        }
-      }
-      cfb.setProtocol(ConnectionFactoryBuilder.Protocol.BINARY);
-      cfb.setAuthDescriptor(
-          new AuthDescriptor(
-              new String[] {com.google.cloud.memcache.Authentication.MECHANISM}, null));
-    }
+    // Disable SASL since we are not going to support it.
+    // if (requireSasl) {
+    //   if (isAscii) {
+    //     throw new IllegalArgumentException("Binary protocal required for SASL");
+    //   }
+    //   synchronized (SASL_INITIALIZAQTION_LOCK) {
+    //     if (!SASL_INITIALIZED) {
+    //       com.google.cloud.memcache.Authentication.initialize();
+    //       SASL_INITIALIZED = true;
+    //     }
+    //   }
+    //   cfb.setProtocol(ConnectionFactoryBuilder.Protocol.BINARY);
+    //   cfb.setAuthDescriptor(
+    //       new AuthDescriptor(
+    //           new String[] {com.google.cloud.memcache.Authentication.MECHANISM}, null));
+    // }
     // cfb.setTranscoder(new SpymemcachedSerializingTranscoder());
     cfb.setProtocol(isAscii ? Protocol.TEXT : Protocol.BINARY);
     ArrayList<InetSocketAddress> servers = new ArrayList<>();

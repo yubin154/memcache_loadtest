@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
-  <version>2</version>
+  <version>10</version>
   <threadsafe>true</threadsafe>
   <env>flex</env>
-  <service>memcache-e2etest-loadrunner1</service>
+  <service>memcache-keytest</service>
   <resources>
     <cpu>8</cpu>
-    <memory-gb>40</memory-gb>
+    <memory-gb>48</memory-gb>
     <disk-size-gb>100</disk-size-gb>
   </resources>
   <automatic-scaling>
-    <min-num-instances>3</min-num-instances>
-    <max-num-instances>3</max-num-instances>
+    <min-num-instances>1</min-num-instances>
+    <max-num-instances>1</max-num-instances>
   </automatic-scaling>
   <beta-settings>
-    <setting name="source_reference" value="https://github.com/yubin154/memcache_loadteset.git"/>
     <setting name="enable_app_engine_apis" value="True"/>
   </beta-settings>
   <env-variables>
      <!-- .32.80 is nightly, .34.80 is qa, .36.80 is prod  -->
      <env-var name="MEMCACHE_CFE_ADDRESS" value="216.239.36.80:80"/>
+     <env-var name="MEMCACHE_CONN_REQUEST_LIMIT" value="10000"/>
   </env-variables>
 </appengine-web-app>

@@ -1,9 +1,12 @@
 package com.google.cloud.cache.apps.loadtest;
 
+import com.google.appengine.api.memcache.MemcacheSerialization;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.common.collect.Range;
+import com.google.protobuf.ByteString;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,10 +30,11 @@ public final class SetServlet extends HttpServlet {
     ResponseWriter writer = ResponseWriter.create(response);
     MemcacheService memcache = MemcacheServiceFactory.getMemcacheService();
 
-    String key = reader.readKey();
     Range<Integer> valueSizeRange = reader.readValueSizeRange();
     int iterationCount = reader.readIterationCount();
     for (int i = 0; i < iterationCount; ++i) {
+      java.io.Serializable key = new java.util.Date();
+      writer.write(String.format("key=%s, encodedKey=%s", key, getEncodedKey(key)));
       String value = MemcacheValues.random(valueSizeRange);
       try {
         memcache.put(key, value);
@@ -39,7 +43,12 @@ public final class SetServlet extends HttpServlet {
         writer.fail();
         return;
       }
-      writer.write(key, value);
+      writer.write(key.toString(), value);
     }
+  }
+
+  static String getEncodedKey(java.io.Serializable key)
+      throws UnsupportedEncodingException, IOException {
+    return ByteString.copyFrom(MemcacheSerialization.makePbKey(key)).toString("UTF-8");
   }
 }
